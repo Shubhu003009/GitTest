@@ -7,3 +7,4 @@
 >> 9th commit
 
 JENKINS = poll scm 
+retrying poll scm
