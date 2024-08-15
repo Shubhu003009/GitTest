@@ -1,41 +1,38 @@
 pipeline {
   agent any
+  tools {
+    maven 'Maven'
+  }
   stages {
     stage('test') {
-      agent any
       steps {
-        tool(name: 'Maven', type: 'testing-tool')
         sh 'mvn clean test'
         echo 'testing initiated'
       }
     }
-
     stage('build') {
-      agent any
       steps {
-        tool(name: 'Maven', type: 'testing-tool')
         echo 'build initialized'
-        sh 'mvn clean install'
+        sh 'mvn package'
       }
     }
-
-    stage('deploy_test') {
-      agent any
-      steps {
-        sh '''pwd
-ls
-whoami
-hostname -i'''
-        echo 'deployed to production'
-      }
-    }
-
     stage('deploy_prod') {
-      agent any
       steps {
+        deploy adapters: [tomcat9(credentialsId: 'TOMCAT-DEPLOY_TEST', path: '', url: 'http://65.0.25.153:8081/')], contextPath: '/app', onFailure: false, war: '**/.*war'
         echo 'deploying to production'
       }
     }
-
   }
+  post {
+    always {
+        echo 'pipeline exec - finished'
+    }
+    success {
+        echo 'pipeline exec - successfully'
+    }
+    failure {
+        echo 'pipeline exec - failed'
+    }
+  }
+  
 }
